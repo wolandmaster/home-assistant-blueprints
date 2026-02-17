@@ -4,7 +4,7 @@ This repository contain various blueprints for Home Assistant.
 
 Each blueprint is a YAML file located in its own directory, and each directory includes a `test_ha.sh` script
 that can be used to start Home Assistant in a local Docker container with that blueprint for testing.
-The launched HA is reachable at the URL http://localhost:8123/ using the login credentials: test/test.
+The launched HA is reachable at the URL http://localhost:8123/ using the login credentials: _test/test_.
 
 ## Presence simulation
 
