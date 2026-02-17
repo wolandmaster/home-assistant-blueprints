@@ -1,0 +1,29 @@
+- id: '1770390546480'
+  alias: Presence simulation
+  description: ''
+  use_blueprint:
+    path: wolandmaster/presence-simulation.yaml
+    input:
+      lights:
+        - light.bedroom_light
+        - light.kitchen_light
+        - light.bathroom_light
+        - light.garage_light
+        - light.hall_light
+        - light.outdoor_light
+      min_turn_on_time:
+        hours: 0
+        minutes: 1
+        seconds: 0
+      max_turn_on_time:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      min_wait_time:
+        hours: 0
+        minutes: 20
+        seconds: 0
+      max_wait_time:
+        hours: 1
+        minutes: 30
+        seconds: 0

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "input_boolean",
+  "data": {
+    "items": [
+      {
+        "id": "bedroom_light",
+        "name": "Bedroom light",
+        "initial": false
+      },
+      {
+        "id": "kitchen_light",
+        "name": "Kitchen light",
+        "initial": false
+      },
+      {
+        "id": "bathroom_light",
+        "name": "Bathroom light",
+        "initial": false
+      },
+      {
+        "id": "garage_light",
+        "name": "Garage light",
+        "initial": false
+      },
+      {
+        "id": "hall_light",
+        "name": "Hall light",
+        "initial": false
+      },
+      {
+        "id": "outdoor_light",
+        "name": "Outdoor light",
+        "initial": false
+      }
+    ]
+  }
+}

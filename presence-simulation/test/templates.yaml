@@ -1,0 +1,67 @@
+- light:
+    - name: Bedroom light
+      unique_id: 05fd76fa-74da-4547-b655-16d7af992cf9
+      state: "{{ states('input_boolean.bedroom_light') }}"
+      turn_on:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.bedroom_light
+      turn_off:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.bedroom_light
+    - name: Kitchen light
+      unique_id: c3344c7b-5503-4801-aa0e-006532d024ec
+      state: "{{ states('input_boolean.kitchen_light') }}"
+      turn_on:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.kitchen_light
+      turn_off:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.kitchen_light
+    - name: Bathroom light
+      unique_id: 8866facc-7ff7-453d-9cd4-62bc7f55fc77
+      state: "{{ states('input_boolean.bathroom_light') }}"
+      turn_on:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.bathroom_light
+      turn_off:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.bathroom_light
+    - name: Garage light
+      unique_id: d3abbb55-190d-45bd-8718-16eb66f9bd83
+      state: "{{ states('input_boolean.garage_light') }}"
+      turn_on:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.garage_light
+      turn_off:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.garage_light
+    - name: Hall light
+      unique_id: 99c44c38-5f17-4b7e-ba29-03e89c568220
+      state: "{{ states('input_boolean.hall_light') }}"
+      turn_on:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.hall_light
+      turn_off:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.hall_light
+    - name: Outdoor light
+      unique_id: eac0cecc-80f3-4735-8513-56d5799d7f3b
+      state: "{{ states('input_boolean.outdoor_light') }}"
+      turn_on:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.outdoor_light
+      turn_off:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.outdoor_light

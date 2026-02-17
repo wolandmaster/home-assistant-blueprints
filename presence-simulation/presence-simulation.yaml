@@ -1,0 +1,165 @@
+blueprint:
+  name: Presence simulation
+  description: This Home Assistant blueprint implements a presence simulation.
+    It turns the specified light entities on for a random duration between the given minimum and maximum times,
+    then waits a random interval between another minimum and maximum before turning the light on again.
+    The specified lights are handled separately and independently; each light’s on/off switching is calculated
+    based on the time elapsed since its previous state change (except for the very first time,
+    because in that case all lights could be turned on at once if a long time has passed
+    since a given light’s last state change). It is possible to add additional conditions to the automation,
+    for example to activate it only after sunset and randomly switch the lights until midnight.
+  domain: automation
+  input:
+    lights:
+      name: Lights
+      description: Lights involved in the presence simulation.
+      default: []
+      selector:
+        entity:
+          domain:
+            - light
+          multiple: true
+    optional_conditions:
+      name: Optional conditions
+      description: Set some additional conditions for running this automation.
+        For example, it should only activate after sunset and randomly switch the lights until midnight.
+      default: []
+      selector:
+        condition:
+    min_turn_on_time:
+      name: Minimum turn-on time
+      description: Minimum amount of time the lights should be on.
+      default:
+        hours: 0
+        minutes: 1
+        seconds: 0
+      selector:
+        duration:
+    max_turn_on_time:
+      name: Maximum turn-on time
+      description: Maximum amount of time the lights should be on.
+      default:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      selector:
+        duration:
+    min_wait_time:
+      name: Minimum wait time
+      description: Minimum waiting time between turning on the lights.
+      default:
+        hours: 0
+        minutes: 20
+        seconds: 0
+      selector:
+        duration:
+    max_wait_time:
+      name: Maximum wait time
+      description: Maximum waiting time between turning on the lights.
+      default:
+        hours: 1
+        minutes: 30
+        seconds: 0
+      selector:
+        duration:
+
+variables:
+  lights: !input lights
+  shuffled_lights: >-
+    {% set ns = namespace(src=lights, res=[]) %}
+    {% for _ in lights %}
+      {% set random_pick = ns.src | random %}
+      {% set ns.res = ns.res + [random_pick] %}
+      {% set ns.src = ns.src | reject('eq', random_pick) | list %}
+    {% endfor %}
+    {{ ns.res }}
+
+  min_turn_on_time: !input min_turn_on_time
+  min_turn_on_minutes: "{{ (timedelta(**min_turn_on_time).total_seconds() / 60) | round }}"
+  max_turn_on_time: !input max_turn_on_time
+  max_turn_on_minutes: "{{ (timedelta(**max_turn_on_time).total_seconds() / 60) | round }}"
+
+  min_wait_time: !input min_wait_time
+  min_wait_minutes: "{{ (timedelta(**min_wait_time).total_seconds() / 60) | round }}"
+  max_wait_time: !input max_wait_time
+  max_wait_minutes: "{{ (timedelta(**max_wait_time).total_seconds() / 60) | round }}"
+
+  last_updated_seconds: "{{ (now() - this.last_updated | as_datetime).total_seconds() | int }}"
+  last_changed_seconds: "{{ (now() - this.last_changed | as_datetime).total_seconds() | int }}"
+  state_changed_by_user: "{{ this.context.user_id != none }}"
+
+trigger:
+  - platform: time_pattern
+    id: minute_trigger
+    minutes: "*"
+
+condition:
+  - condition: or
+    # Don't leave any lights on after the time window specified by the optional condition has expired.
+    conditions:
+      - condition: state
+        entity_id: !input lights
+        state: "on"
+        match: any
+      - and: !input optional_conditions
+
+action:
+  - repeat:
+      for_each: "{{ shuffled_lights }}"
+      sequence:
+        - choose:
+            # Don't turn on all the lights at once after a long pause caused by an optional condition.
+            # This condition will only occur once, at the very beginning of the precence simulation.
+            - conditions:
+                - condition: template
+                  value_template: "{{ states(repeat.item) == 'off' }}"
+                - condition: or
+                  conditions:
+                    - condition: template
+                      value_template: "{{ last_updated_seconds > max_turn_on_minutes * lights | count }}"
+                    - condition: template
+                      value_template: "{{ last_changed_seconds < 60 and state_changed_by_user }}"
+              sequence:
+                - service: homeassistant.turn_on
+                  target:
+                    entity_id: "{{ repeat.item }}"
+                - delay:
+                    minutes: "{{ range(min_turn_on_minutes, max_turn_on_minutes + 1) | random }}"
+                - service: homeassistant.turn_off
+                  target:
+                    entity_id: "{{ repeat.item }}"
+            # Turn on a turned off light after a random amount of time between the minimum and maximum waiting minutes.
+            - conditions:
+                - condition: template
+                  value_template: "{{ states(repeat.item) == 'off' }}"
+                - condition: template
+                  value_template: >-
+                    {% set wait_minutes = ((now() - states[repeat.item].last_changed).total_seconds() / 60) | round %}
+                    {% if wait_minutes < max_wait_minutes %}
+                      {% set remaining_minutes = range(0, max_wait_minutes + 1 - wait_minutes) %}
+                      {% set random_pick = remaining_minutes | list | random %}
+                    {% endif %}
+                    {{ wait_minutes >= max_wait_minutes or (wait_minutes >= min_wait_minutes and random_pick == 0) }}
+                - and: !input optional_conditions
+              sequence:
+                - service: homeassistant.turn_on
+                  target:
+                    entity_id: "{{ repeat.item }}"
+            # Turn off a turned on light after a random amount of time between the minimum and maximum turn-on minutes.
+            - conditions:
+                - condition: template
+                  value_template: "{{ states(repeat.item) == 'on' }}"
+                - condition: template
+                  value_template: >-
+                    {% set turn_on_minutes = ((now() - states[repeat.item].last_changed).total_seconds() / 60) | round %}
+                    {% if turn_on_minutes < max_turn_on_minutes %}
+                      {% set remaining_minutes = range(0, max_turn_on_minutes + 1 - turn_on_minutes) %}
+                      {% set random_pick = remaining_minutes | list | random %}
+                    {% endif %}
+                    {{ turn_on_minutes >= max_turn_on_minutes or (turn_on_minutes >= min_turn_on_minutes and random_pick == 0) }}
+              sequence:
+                - service: homeassistant.turn_off
+                  target:
+                    entity_id: "{{ repeat.item }}"
+
+mode: single

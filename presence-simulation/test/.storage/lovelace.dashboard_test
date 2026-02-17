@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace.dashboard_test",
+  "data": {
+    "config": {
+      "views": [
+        {
+          "type": "sections",
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Lights"
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "light.bedroom_light"
+                    },
+                    {
+                      "entity": "light.kitchen_light"
+                    },
+                    {
+                      "entity": "light.bathroom_light"
+                    },
+                    {
+                      "entity": "light.garage_light"
+                    },
+                    {
+                      "entity": "light.hall_light"
+                    },
+                    {
+                      "entity": "light.outdoor_light"
+                    }
+                  ],
+                  "grid_options": {
+                    "columns": 48,
+                    "rows": "auto"
+                  },
+                  "hours_to_show": 4
+                }
+              ],
+              "column_span": 4
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
