@@ -1,6 +1,6 @@
 blueprint:
   name: Presence simulation
-  description: This Home Assistant blueprint implements a presence simulation.
+  description: This Home Assistant blueprint implements a simple presence simulation.
     It turns the specified light entities on for a random duration between the given minimum and maximum times,
     then waits a random interval between another minimum and maximum before turning the light on again.
     The specified lights are handled separately and independently; each light’s on/off switching is calculated
@@ -113,10 +113,11 @@ action:
             - conditions:
                 - condition: template
                   value_template: "{{ states(repeat.item) == 'off' }}"
+                - and: !input optional_conditions
                 - condition: or
                   conditions:
                     - condition: template
-                      value_template: "{{ last_updated_seconds > max_turn_on_minutes * lights | count }}"
+                      value_template: "{{ last_updated_seconds > max_turn_on_minutes * 60 * lights | count }}"
                     - condition: template
                       value_template: "{{ last_changed_seconds < 60 and state_changed_by_user }}"
               sequence:
@@ -132,6 +133,7 @@ action:
             - conditions:
                 - condition: template
                   value_template: "{{ states(repeat.item) == 'off' }}"
+                - and: !input optional_conditions
                 - condition: template
                   value_template: >-
                     {% set wait_minutes = ((now() - states[repeat.item].last_changed).total_seconds() / 60) | round %}
@@ -140,7 +142,6 @@ action:
                       {% set random_pick = remaining_minutes | list | random %}
                     {% endif %}
                     {{ wait_minutes >= max_wait_minutes or (wait_minutes >= min_wait_minutes and random_pick == 0) }}
-                - and: !input optional_conditions
               sequence:
                 - service: homeassistant.turn_on
                   target:
